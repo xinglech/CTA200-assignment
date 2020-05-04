@@ -19,11 +19,6 @@ module eom
 #endif
   implicit none
 
-  ! Fix these so that they aren't fixed.
-!  integer, parameter :: nLat=512, nFld=1
-!  integer, parameter :: nVar = 2*nLat*nFld+1
-!  real(dl), dimension(1:nVar), target :: yvec  ! This is a problem, does it work if I make it allocatable?
-
   integer :: nLat, nFld, nVar
   real(dl), dimension(:), allocatable, target :: yvec
 
@@ -94,8 +89,7 @@ contains
     yp(2*nlat) = yp(2*nlat) + lNorm * ( yc(nlat-1) - 2._dl*yc(nlat) + yc(1) )
     
     yp(nlat+2:2*nlat-1) = yp(nlat+2:2*nlat-1) + lNorm*( yc(1:nlat-2) - 2._dl*yc(2:nlat-1) + yc(3:nlat) )
-#endif
-#ifdef FOURIER_DIFF
+#else
     tPair%realSpace(:) = yc(FLD)
     call laplacian_1d_wtype(tPair,dk)
     yp(DFLD) = yp(DFLD) + tPair%realSpace(:)
