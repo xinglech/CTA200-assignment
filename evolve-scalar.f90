@@ -35,18 +35,19 @@ program Scalar_1D
 ! What needs fixing, set phi0 out here, allow m^2 to vary from vacuum value, etc.
 
   call set_lattice_params(1024,50._dl,1)
-  call set_model_params(0.5_dl,100._dl)
- 
+!  call set_model_params(0.5_dl,100._dl)  ! A default for the double well
+  call set_model_params(1.2_dl,1._dl)
+  
   fld(1:nLat,1:2) => yvec(1:2*nLat*nFld)
   time => yvec(2*nLat*nFld+1)
-  alph = 16._dl; n_cross = 8
+  alph = 4._dl; n_cross = 4
 
-  call initialize_rand(87,18)
+  call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
 
   do i=1,1
-     call initialise_fields(fld,nLat/4+1)
-     call time_evolve(dx/alph,4*nlat*n_cross,128*4)
+     call initialise_fields(fld,nLat/4+1,0.25*twopi)
+     call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross)
   enddo
  
 !  call forward_backward_evolution(0.4_dl/omega,10000,100)
@@ -269,7 +270,6 @@ contains
     write(oFile,*)
     
     print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
-!    print*,"conservation :", sum(v(fld(:,1))+0.5_dl*fld(:,2)**2)
 
   end subroutine output_fields
 
