@@ -249,7 +249,7 @@ contains
        write(oFile,*) "# Time Stepping parameters"
        write(oFile,*) "# dt = ",dt_, " dt_out = ",dtout_
        write(oFile,*) "#"
-       write(oFile,*) "Phi  PhiDot  GradPhi^2  V(phi)  GradPhi^2 (FD)"
+       write(oFile,*) "# Phi  PhiDot  GradPhi^2  V(phi)  GradPhi^2 (FD) V_quad"
     endif
 
     gsq_fd(1) = 0.5_dl*( (fld(nLat,1)-fld(1,1))**2+(fld(2,1)-fld(1,1))**2 )
