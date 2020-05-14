@@ -82,7 +82,8 @@ contains
     real(dl), dimension(:), intent(in) :: yc
     real(dl), dimension(:), intent(out) :: yp
 #ifdef DISCRETE
-    real(dl), parameter :: lNorm = 1._dl/dx**2
+    real(dl) :: lNorm 
+    lNorm = 1._dl/dx**2
 #endif
     yp(TIND) = 1._dl  ! Uncomment to track time as a variable
     yp(FLD) = yc(DFLD)
