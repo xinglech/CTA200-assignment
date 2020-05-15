@@ -40,7 +40,7 @@ program Scalar_1D
   
   fld(1:nLat,1:2) => yvec(1:2*nLat*nFld)
   time => yvec(2*nLat*nFld+1)
-  alph = 4._dl; n_cross = 4
+  alph = 2._dl; n_cross = 4
 
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
@@ -249,7 +249,7 @@ contains
        write(oFile,*) "# Time Stepping parameters"
        write(oFile,*) "# dt = ",dt_, " dt_out = ",dtout_
        write(oFile,*) "#"
-       write(oFile,*) "# Phi  PhiDot  GradPhi^2  V(phi)  GradPhi^2 (FD) V_quad"
+       write(oFile,*) "# Phi  PhiDot  GradPhi^2 (FD)  V(phi)  GradPhi^2 (Spec) V_quad"
     endif
 
     gsq_fd(1) = 0.5_dl*( (fld(nLat,1)-fld(1,1))**2+(fld(2,1)-fld(1,1))**2 )
@@ -265,11 +265,11 @@ contains
 #endif
     ! Fix this if I change array orderings
     do i=1,size(fld(:,1))
-       write(oFile,*) fld(i,:), gsq(i), v(fld(i,1)), gsq_fd(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
+       write(oFile,*) fld(i,:), gsq_fd(i), v(fld(i,1)), gsq(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
     enddo
     write(oFile,*)
     
-!    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
+    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
 
   end subroutine output_fields
 
