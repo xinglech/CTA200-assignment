@@ -40,7 +40,7 @@ program Scalar_1D
   
   fld(1:nLat,1:2) => yvec(1:2*nLat*nFld)
   time => yvec(2*nLat*nFld+1)
-  alph = 2._dl; n_cross = 4
+  alph = 4._dl; n_cross = 4
 
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
@@ -269,7 +269,7 @@ contains
     enddo
     write(oFile,*)
     
-    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
+!    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
 
   end subroutine output_fields
 
