@@ -249,7 +249,7 @@ contains
        write(oFile,*) "# Time Stepping parameters"
        write(oFile,*) "# dt = ",dt_, " dt_out = ",dtout_
        write(oFile,*) "#"
-       write(oFile,*) "# Phi  PhiDot  GradPhi^2  V(phi)  GradPhi^2 (FD) V_quad"
+       write(oFile,*) "# Phi  PhiDot  GradPhi^2 (FD)  V(phi)  GradPhi^2 (Spec) V_quad"
     endif
 
     gsq_fd(1) = 0.5_dl*( (fld(nLat,1)-fld(1,1))**2+(fld(2,1)-fld(1,1))**2 )
@@ -265,7 +265,7 @@ contains
 #endif
     ! Fix this if I change array orderings
     do i=1,size(fld(:,1))
-       write(oFile,*) fld(i,:), gsq(i), v(fld(i,1)), gsq_fd(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
+       write(oFile,*) fld(i,:), gsq_fd(i), v(fld(i,1)), gsq(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
     enddo
     write(oFile,*)
     
