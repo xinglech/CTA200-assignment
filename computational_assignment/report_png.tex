@@ -1,0 +1,188 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\setlength\parindent{2pt}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{derivative}
+\usepackage{amsmath,amssymb}
+
+
+\title{SURP Computing Project 2020: Lechun Xing \\ CTA200H \\ Supervisor: Jonathan Braden}
+\author{Lechung Xing - 1004705170 }
+\date{May 8th 2020}
+
+\begin{document}
+
+\maketitle
+% Part 1
+\section{Clone folder from Github}
+git branch:\\ * dev(development branch)\\   master(main branch)
+% Part 2
+\section{Units}
+\subsection{(a) find dimensions of field $\phi$ and potential energy density $V(\phi)$}
+Given: $[c]=light speed=LT^{-1}$ and 
+$[\hbar]=ML^2{T^{-1}}=[S]$
+
+\vspace{3mm}
+Action $S=\int{d^d{x}dt({(\dot{\phi}})^2}/{2c^2}-{(\partial_x{\phi})^2}/2-V(\phi))$
+
+\vspace{3mm}
+Replace
+$[\dot{\phi}]=[\phi]T^{-1}$ and
+$[\partial_x{\phi}]=[\phi]/x=[\phi]x^{-1}$ where [x]=[L]
+
+\vspace{3mm}
+Dimension $[S]=L^d{T}({[\phi]^2{T^{-2}}}/L^2{T^{-2}}-[\phi]^2{L^{-2}}-[V(\phi)]$
+
+\vspace{3mm}
+Simplify $[S]={L^{d-2}T}({[\phi]^2}-[\phi]^2-L^2[V(\phi)])=[\hbar]=ML^2{T^{-1}}$
+
+\vspace{3mm}
+After cancelling the ${[\phi]^2}$ terms and collecting the $L$ terms:
+
+\vspace{3mm}
+We derived the dimension of 
+$[V(\phi)]=ML^{2-d}T^{-2}$
+
+\vspace{5mm}
+Recall PDE: $\frac{1}{c^2}{\frac{\partial^2\phi}{\partial{t^2}}}-{\frac{\partial^2\phi}{\partial{x^2}}}+{\frac{\partial{V}}{\partial{\phi}}}=0$
+
+\vspace{3mm}
+The first 2 terms differ only by a constant $A$, they share the same dimension as in the Action expression [S] listed above. Thus, we can rewrite PDE:
+
+\vspace{3mm}
+$A[\phi]L^{-2}+[V][\phi]^{-1}=0$ Replace the dimension of [V] and collect $[\phi]$ terms:
+
+\vspace{3mm}
+We derived the dimension of 
+$[\phi]=(-A)^{-1/2}L[V]^{1/2}=(L^{4-d})^{1/2}M^{1/2}T^{-1}$, in which $d$ is spatial dimensions.
+
+\subsection{(b) introduce scalar $\Lambda, x_0, t_0$, rewrite action S}
+
+Given: $\phi=\Lambda{\bar{\phi}}$ and $x=x_0{\bar{x}}$ and $t=t_o{\bar{t}}$
+
+\vspace{3mm}
+Derive: $\dot{\phi}=\Lambda{\dot{\bar\phi}}=\Lambda{\partial_t}{\bar\phi}$ and $\partial_x{\phi}=\frac{\partial\phi}{\partial{x}}=\frac{\partial\phi}{\partial}{{(x_0\bar{x})}}=\frac{1}{x_0}{\partial_\bar{x}}{(\Lambda{\bar\phi})}=\frac{\Lambda}{x_0}{\partial_\bar{x}}{\bar\phi}$
+
+\vspace{3mm}
+Similarly convert the differentials: $dx=x_0{d\bar{x}}$ and $dt=t_0{d\bar{t}}$
+
+\vspace{3mm}
+Action $S=\int{{x_0}^d{(d\bar{x}})^d{(t_0{d\bar{t}})}[\frac{\Lambda^2{\dot{\bar{\phi}}}^2}{2c^2}-\frac{1}{2}{(\frac{\Lambda}{x_0})^2(\partial_{\bar{x}}{\bar\phi}})^2-V(\Lambda\bar\phi)]}$
+
+\subsection{(c) rewrite PDE in terms of  derivatives of $\bar{t}, \bar{x}$}
+Substitute 3 scalars into PDE: $\frac{1}{c^2}{\frac{\partial^2}{\partial{t^2}}(\Lambda\bar\phi)}-\frac{\partial^2}{\partial{x^2}}(\Lambda\bar\phi)+\frac{\partial{V}}{\partial(\Lambda\bar\phi)}=0$
+
+\vspace{3mm}
+Pull out $\Lambda$: $\frac{\Lambda}{{c^2}{t_0}^2}{{\partial^2}_{\bar{t}}\bar\phi}-{\frac{\Lambda}{{x_0}^2}{\partial^2_{\bar{x}}}}{\bar\phi}+{\frac{\partial{V(\bar\phi)}}{\partial{\bar\phi}}}=0$
+
+
+%Which code file? Which eqn?
+\subsection{(d) rewrite dimensionless eqn. in the code for  $\hbar=c=1$}
+For $\hbar=c=1$: 
+$\frac{\Lambda}{{t_0}^2}{{\partial^2}_{\bar{t}}\bar\phi}-{\frac{\Lambda}{{x_0}^2}{\partial^2_{\bar{x}}}}{\bar\phi}+{\frac{\partial{V}}{\partial{\bar\phi}}}=0$ all expressed in terms of scaling factors or dimensionless quantities. If implement this equation into codes, we need to specify all the scalars in front of derivative terms before hand. Here, the potential expression is $V(\bar\phi)$.
+%Part 3
+\section{Plot field evolution $\phi(x, t)$}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_default.png}
+    \caption{Field evolution $\phi(t, x)$ plotted from $<fields.dat>$ with the normalized lattice sites $x\in{[0, 1024*dx]}$ and the normalized time steps $t\in{[0, 200]}$.}
+    \label{fig:Q3}
+\end{figure}
+
+$\phi(t, x)$ values drop across all 1024 lattice sites as t increases. The slanted bands extending over Fig.1 indicate the fluctuations of $\phi(t, x)$ values among the overall decreasing trend for larger t. There appears a wall near $t=25$, separating the True Vacuum from the False vacuum, marking the boundary of the distinct mean $\phi$ values. 
+
+% Part 4
+\section{Energy conservation}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{E_dev_alph=4}
+    \caption{Violation of Energy conservation vs. output time steps $dt_{out}$. Blue data is calculated from $<fields.dat>$ according to $E=\sum_i(\frac{1}{2}{\dot\phi_i}^2+\frac{1}{2}{(\nabla{\phi})^2}_i+V(\phi_i))$, $i$ means summation over 1024 lattice sites. Red dashed line is the power fitting model $E = a*{t}^b$, a, b are parameters. $t=dt'$ array, determined by $\alpha=dx/dt$ in $<evolve-scalar.f90>$}
+    \label{fig:Q4}
+\end{figure}
+
+The fitting model depicted in Fig.2 caption was my initial idea for testing the scaling relationship between $|E(t) - E(0)|$ and $\alpha$. The size of Energy deviation $|E(t) - E(0)|$ seems to increases linearly with t. When $\alpha = 0.95$ or any value smaller than 1., the code does not output data file, this prevents the integrator to yield far-off values. The $dl$ in the legend of Fig.2 indicates "double precision" in the code file. When adjusting $\alpha$, I only alters the numerical value before $dl$ in Part 5. 
+
+% Part 5
+\section{Energy violation: adjust $\alpha$}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{E_dev_alph_all}
+    \includegraphics[scale=0.7]{E_dev_alph_all_log}
+    \caption{Combined $|E(t) - E(0)|$ plot for 6 $\alpha$ values. The bottom plot is with log y axis. The new fitting model is $Error = a*(dt')**b$, where $dt'$ is fixed and is unique for each $\alpha$. We are only interested in $b$. }
+    \label{fig:Q5}
+\end{figure}
+
+Fig.3 shows $|E(t) - E(0)|$ decreases as $\alpha$ increases from 1. to 32..
+
+ I realized this part is asking for how Energy conservation error is scaled with dt' instead of the time evolution of $E(t) - E(0)$, the irrelevant fitting plots are attached in my codes. I noticed from Fig.3.(log scale) that for each dt', the Error size satisfies $\frac{Error[i]}{Error[j]}\propto({\frac{dt'[i]}{dt'[j]}})^{b}$, where i,j are indices from dt' array. Averaging over the 6 b-values [8.83619719 8.55494879 8.93256013 8.98341054 8.98661886 8.72344764] (for 6 dt'), I conclude $b\approx8.836\approx9$. This is the exponent $b$ for Part 6. In general, $a$ for the 6 $\alpha$ are assumed to be of the same order of magnitude. Thus, I omitted $a$ in the fractional equation mentioned above.  
+
+\vspace{3mm}
+
+
+\section{Field evolution: adjust $\lambda$ the shape of $V(\phi)$}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_L1point5.png}
+    \includegraphics[scale=0.7]{Phi_evo_L1point3.png}
+    \caption{$\lambda=1.5 and 1.3$}
+    \label{fig:Q1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_Lpoint9.png}
+    \includegraphics[scale=0.7]{Phi_evo_Lpoint8.png}
+    \caption{$\lambda=0.9 and 0.8$}
+    \label{fig:Q1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_L1.png}
+    \caption{$\lambda=1.$}
+    \label{fig:Q1}
+\end{figure}
+
+When $\lambda$ is far away from $1.2$, I no longer see the clear cut (wall) between True vacuum and the False vacuum. Especially when $\lambda=1.5>1.2$, field evolves to a stage filled with fluctuations.
+When $\lambda=1.$, the plot shows distorted patches of extremely large or small $\phi$, but the rest of region has little fluctuations. This is particularly interesting, unlike other $\lambda$ conditions.
+
+\section{Field evolution: adjust initial conditions}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_8617.png}
+    \includegraphics[scale=0.7]{Phi_evo_8618.png}
+    \caption{(86, 17), (86,18) initial conditions}
+    \label{fig:Q1}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_8719.png}
+    \includegraphics[scale=0.7]{Phi_evo_8818.png}
+    \caption{(87, 19), (88,18) initial conditions}
+    \label{fig:Q1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{Phi_evo_8710.png}
+    \caption{(87,10) initial conditions}
+    \label{fig:Q1}
+\end{figure}
+
+For random seeds close to the default (87, 18), the field evolution does not change much in terms of the $\phi$ value difference above and below the wall. Related to Part 6, although both $\lambda$ and the random seeds can prepare different initial conditions, the lattice system's evolution is more sensitive to $\lambda$ rather than (*, *) in Part 7. 
+
+\vspace{5mm}
+
+Note: Due to the large numbers of complicated plots above, I insert their .PNG version but have uploaded the .PDF version into my Github computational(underscore)assignment folder. Otherwise, I cannot git push this report to Github.
+
+\end{document}
