@@ -35,9 +35,8 @@ program Scalar_1D
 ! What needs fixing, set phi0 out here, allow m^2 to vary from vacuum value, etc.
 
   call set_lattice_params(1024,50._dl,2)
-! (1024,50._dl,2) = (n, l, nf) = (nLat, len, nFld) 
   call set_model_params(0.5_dl,100._dl)  ! A default for the double well
-  ! call set_model_params(1.2_dl,1._dl) = (lam, m2)
+  ! call set_model_params(1.2_dl,1._dl)
   
   fld(1:nLat,1:4) => yvec(1:2*nLat*nFld)
   time => yvec(2*nLat*nFld+1)
