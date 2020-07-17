@@ -105,6 +105,7 @@ contains
     call initialise_mean_fields(fld)
     yvec(4*nLat+1) = 0._dl ! Add a tcur pointer here
     call initialize_vacuum_fluctuations(fld,len,m2eff,kmax,phiL,kc)
+    ! Lechun: call initialize_vacuum_fluctuations(fld(:,3:4),len,m2eff2,kmax,phiL,kc)
     !!! Test this new subroutine
 !    call initialize_linear_fluctuations(fld,len,m2eff,0._dl,1,kmax)  !!! Debug this more
   end subroutine initialise_fields
@@ -253,7 +254,7 @@ contains
        write(oFile,*) "# Time Stepping parameters"
        write(oFile,*) "# dt = ",dt_, " dt_out = ",dtout_
        write(oFile,*) "#"
-       write(oFile,*) "# Phi  PhiDot  Chi  ChiDot  V(chi) GradPhi^2 (FD)  V(phi)  GradPhi^2 (Spec) V_quad"
+       write(oFile,*) "# Phi  PhiDot  Chi  ChiDot  GradPhi^2 (FD)  V(phi)  GradPhi^2 (Spec) V_quad"
     endif
 
     gsq_fd(1) = 0.5_dl*( (fld(nLat,1)-fld(1,1))**2+(fld(2,1)-fld(1,1))**2 )
@@ -269,11 +270,11 @@ contains
 #endif
     ! Fix this if I change array orderings
     do i=1,size(fld(:,1))
-       write(oFile,*) fld(i,:), v2(fld(i,3)), gsq_fd(i), v(fld(i,1)), gsq(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
+       write(oFile,*) fld(i,:), gsq_fd(i), v(fld(i,1), fld(i,3)), gsq(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
     enddo
     write(oFile,*)
     
-    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1))+0.5_dl*fld(:,2)**2) 
+    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1), fld(:,3))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1), fld(:,3))+0.5_dl*fld(:,2)**2) 
 
   end subroutine output_fields
 

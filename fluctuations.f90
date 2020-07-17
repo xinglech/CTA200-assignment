@@ -135,6 +135,9 @@ contains
     fld(:,2) = fld(:,2) + df(:)
 
 ! Lechun: new spectrum for new field chi
+    do i=1,nn
+       w2eff2(i) = 0._dl + (twopi/len)**2*(i-1)**2 ! I want m2 = 0 here for chi
+    enddo
     spec2 = 0._dl
     spec2(2:) = norm / w2eff2(2:)**0.25
     call generate_1dGRF(df2,spec2(1:km),.false.,initStride=kc)

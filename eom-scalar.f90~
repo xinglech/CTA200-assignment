@@ -49,6 +49,7 @@ contains
   ! Add appropriate subroutine calls here to potential derivs, etc. here
   subroutine set_model_params(lam,m2)
     real(dl), intent(in) :: m2, lam
+    
     lambda = lam;
     m2eff = 2._dl*(1._dl-lam)
     m2eff2 = 0._dl
@@ -60,9 +61,9 @@ contains
     ! endif
   end subroutine set_model_params
 
-  real(dl) elemental function v(phi)
-    real(dl), intent(in) :: phi
-    v = 0.25_dl*(phi**2-1._dl)**2+lambda*((1._dl/3._dl)*phi**3-phi+2._dl/3._dl)
+  real(dl) elemental function v(phi, chi)
+    real(dl), intent(in) :: phi, chi
+    v = 0.25_dl*(phi**2-1._dl)**2+lambda*((1._dl/3._dl)*phi**3-phi+2._dl/3._dl) + 5._dl ! chi = 5 try constant
     ! 1._dl-cos(phi)+0.5_dl*lambda**2*sin(phi)**2
   end function v
 
