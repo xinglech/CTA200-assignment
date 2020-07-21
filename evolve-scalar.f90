@@ -20,6 +20,7 @@ program Scalar_1D
 
   real(dl) :: alph, t_cross
   integer :: n_cross
+  integer :: nSamp
   
   type SimParams
      real(dl) :: dx, dt, dtout
@@ -33,7 +34,6 @@ program Scalar_1D
   type(ScalarLattice) :: simulation
 
 ! What needs fixing, set phi0 out here, allow m^2 to vary from vacuum value, etc.
-
   call set_lattice_params(1024,50._dl,2)
 ! (1024,50._dl,2) = (n, l, nf) = (nLat, len, nFld) 
   call set_model_params(0.5_dl,100._dl)  ! A default for the double well
@@ -46,7 +46,8 @@ program Scalar_1D
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
 
-  do i=1,1
+  nSamp = 1
+  do i=1,nSamp
      call initialise_fields(fld,nLat/4+1,0.5*twopi)
      call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross)
   enddo
@@ -103,11 +104,9 @@ contains
     phiL = 0.5_dl*twopi; if (present(phi)) phiL = phi
 
     call initialise_mean_fields(fld)
-    yvec(4*nLat+1) = 0._dl ! Add a tcur pointer here
-    call initialize_vacuum_fluctuations(fld,len,m2eff,kmax,phiL,kc)
-    ! Lechun: call initialize_vacuum_fluctuations(fld(:,3:4),len,m2eff2,kmax,phiL,kc)
-    !!! Test this new subroutine
-!    call initialize_linear_fluctuations(fld,len,m2eff,0._dl,1,kmax)  !!! Debug this more
+    yvec(size(fld)+1) = 0._dl ! Add a tcur pointer here
+    call initialize_vacuum_fluctuations(fld(:,1:2),len,get_m2eff(1),kmax,phiL,kc)
+    call initialize_vacuum_fluctuations(fld(:,3:4),len,get_m2eff(2),kmax,phiL,kc)
   end subroutine initialise_fields
 
   function light_cross_time(len) result(tmax)
@@ -211,11 +210,14 @@ contains
   !> Initialise the field to have mean value given by the false vacuum and no mean velocity 
   subroutine initialise_mean_fields(fld)
     real(dl), dimension(:,:), intent(out) :: fld
-    fld(:,1) = phi_fv()
-    fld(:,2) = 0._dl
-    fld(:,3) = 0._dl
-    fld(:,4) = 0._dl
-    
+    real(dl), dimension(1:nFld) :: fv
+    integer :: i, ii
+    fv = phi_fv()
+    do i=1,nFld
+       ii = 2*(i-1)+1
+       fld(:,ii) = fv(i)
+       fld(:,ii+1) = 0._dl
+    enddo
   end subroutine initialise_mean_fields
   
   !!!! Fix this thing up
@@ -240,9 +242,9 @@ contains
 ! Add smoothing from my other repository
   subroutine output_fields(fld)
     real(dl), dimension(:,:), intent(in) :: fld
-    logical :: o; integer :: i
+    logical :: o; integer :: i, ii
     integer, save :: oFile
-    real(dl), dimension(1:nLat) :: gsq, gsq_fd
+    real(dl), dimension(1:nLat,1:nFld) :: gsq, gsq_fd
 
 !    if (.true.) return
     
@@ -257,25 +259,33 @@ contains
        write(oFile,*) "# Phi  PhiDot  Chi  ChiDot  GradPhi^2 (FD)  V(phi)  GradPhi^2 (Spec) V_quad"
     endif
 
-    gsq_fd(1) = 0.5_dl*( (fld(nLat,1)-fld(1,1))**2+(fld(2,1)-fld(1,1))**2 )
-    gsq_fd(nLat) = 0.5_dl*( (fld(nLat-1,1)-fld(nLat,1))**2+(fld(nLat,1)-fld(1,1))**2  )
-    gsq_fd(2:nLat-1) = 0.5_dl*( (fld(1:nLat-2,1)-fld(2:nLat-1,1))**2+(fld(3:nLat,1)-fld(2:nlat-1,1))**2 )
+    gsq_fd = 0.
+    do i=1,nFld
+       ii = 2*(i-1)+1
+       gsq_fd(1,i) = 0.5_dl*( (fld(nLat,ii)-fld(1,ii))**2+(fld(2,ii)-fld(1,ii))**2 )
+       gsq_fd(nLat,i) = 0.5_dl*( (fld(nLat-1,ii)-fld(nLat,ii))**2+(fld(nLat,ii)-fld(1,ii))**2  )
+       gsq_fd(2:nLat-1,i) = 0.5_dl*( (fld(1:nLat-2,ii)-fld(2:nLat-1,ii))**2+(fld(3:nLat,ii)-fld(2:nlat-1,ii))**2 )
+    enddo
     gsq_fd = gsq_fd / dx**2
+      
 #ifdef FOURIER
-    tPair%realSpace(:) = fld(1:nLat,1)
-    call gradsquared_1d_wtype(tPair,dk)
-    gsq(:) = tPair%realSpace(:)
+    do i=1,nFld
+       tPair%realSpace(:) = fld(1:nLat,2*(i-1)+1)
+       call gradsquared_1d_wtype(tPair,dk)
+       gsq(:,i) = tPair%realSpace(:)
+    enddo
 #else
-    gsq(:) = 0._dl  ! tPair isn't created unless doing Fourier transforms
+    gsq = 0._dl  ! tPair isn't created unless doing Fourier transforms
 #endif
     ! Fix this if I change array orderings
     do i=1,size(fld(:,1))
-       write(oFile,*) fld(i,:), gsq_fd(i), v(fld(i,1), fld(i,3)), gsq(i), 0.5_dl*m2eff*(fld(i,1)-phi_fv())**2 
+       write(oFile,*) fld(i,:), gsq_fd(i,:), v(fld(i,1), fld(i,3)), gsq(i,:)
     enddo
     write(oFile,*)
     
-    print*,"conservation :", sum(0.5_dl*gsq(:)+v(fld(:,1), fld(:,3))+0.5_dl*fld(:,2)**2), sum(0.5_dl*gsq_fd(:)+v(fld(:,1), fld(:,3))+0.5_dl*fld(:,2)**2) 
-
+    print*,"conservation :", &
+         0.5_dl*sum( 0.5_dl*gsq) + sum(v(fld(:,1), fld(:,3))) + 0.5_dl*sum(fld(:,2::2)**2), &
+         0.5_dl*sum(gsq_fd) + sum(v(fld(:,1),fld(:,3))) + 0.5_dl*sum(fld(:,2::2)**2)
   end subroutine output_fields
 
   !>@brief
