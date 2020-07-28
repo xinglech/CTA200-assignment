@@ -65,15 +65,16 @@ contains
     call initialize_transform_1d(tPair,nLat)  ! nonlocality
   end subroutine setup
 
-  subroutine time_evolve(dt,ns,no)
+  subroutine time_evolve(dt,ns,no,out_)
     real(dl), intent(in) :: dt
     integer, intent(in) :: ns, no
     integer :: i,j, outsize, nums
+    logical, intent(in), optional :: out_
     integer :: b_file
+    logical :: out
 
+    out = .true.; if (present(out_)) out = out_
     open(unit=newunit(b_file),file='bubble-count.dat')
-    
-    print*,"dx is ", dx, "dt is ",dt, "dx/dt is ",dx/dt
     if (dt > dx) print*,"Warning, violating Courant condition"
     
     outsize = ns/no; nums = ns/outsize
@@ -83,12 +84,19 @@ contains
        do j=1,outsize
           call gl10(yvec,dt)
        enddo
-       call output_fields(fld)
-       write(b_file,*) count_bubbles(fld(:,1)), mean_cos(fld(:,1))
+       if (out) call output_fields(fld)
+       write(b_file,*) time, mean_field(fld,1)
     enddo
     write(b_file,*)
   end subroutine time_evolve
 
+  function mean_field(fld,i) result(ave)
+    real(dl), dimension(:,:), intent(in) :: fld
+    integer, intent(in) :: i
+    real(dl) :: ave
+    ave = sum(fld(:,i))/dble(size(fld(:,i)))
+  end function mean_field
+  
   subroutine initialise_fields(fld,kmax,phi,klat)
     real(dl), dimension(:,:), intent(inout) :: fld
     integer, intent(in) :: kmax
