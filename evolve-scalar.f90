@@ -41,15 +41,15 @@ program Scalar_1D
   
   fld(1:nLat,1:4) => yvec(1:2*nLat*nFld)
   time => yvec(2*nLat*nFld+1)
-  alph = 4._dl; n_cross = 4
+  alph = 4._dl; n_cross = 2
 
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
 
-  nSamp = 1
+  nSamp = 10
   do i=1,nSamp
      call initialise_fields(fld,nLat/4+1,0.5*twopi)
-     call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross)
+     call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross,out_=.false.)
   enddo
  
 !  call forward_backward_evolution(0.4_dl/omega,10000,100)
@@ -70,11 +70,12 @@ contains
     integer, intent(in) :: ns, no
     integer :: i,j, outsize, nums
     logical, intent(in), optional :: out_
-    integer :: b_file
-    logical :: out
+    integer, save :: b_file
+    logical :: out, o
 
     out = .true.; if (present(out_)) out = out_
-    open(unit=newunit(b_file),file='bubble-count.dat')
+    inquire(opened=o,file='bubble-count.dat')
+    if (.not.o) open(unit=newunit(b_file),file='bubble-count.dat')
     if (dt > dx) print*,"Warning, violating Courant condition"
     
     outsize = ns/no; nums = ns/outsize
