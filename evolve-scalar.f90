@@ -69,19 +69,19 @@ contains
   subroutine time_evolve(dt,ns,no,out_)
     real(dl), intent(in) :: dt
     integer, intent(in) :: ns, no
-    integer :: i,j, outsize, nums, pct
+    integer :: i,j, outsize, nums, pct, m
     logical, intent(in), optional :: out_
     integer, save :: b_file
     logical :: out, o
     real(dl) :: thresh(1:2)
-    real(dl), dimension(1,no+1) :: meant
+    real(dl), dimension(1,no) :: meant, timet
 
     out = .false.; if (present(out_)) out = out_
     inquire(opened=o,file='bubble-count.dat')
     if (.not.o) open(unit=newunit(b_file),file='bubble-count.dat')
     if (dt > dx) print*,"Warning, violating Courant condition"
     
-    outsize = ns/no; nums = ns/outsize; pct = 0; thresh(1)= -0.98_dl; thresh(2) = 5
+    outsize = ns/no; nums = ns/outsize; pct = 0; thresh(2) = 5
     print*,"dt out is ",dt*outsize, "i max is ",nums, "j max is ",outsize, "ns is ",ns, "no is ",no
     dt_ = dt; dtout_ = dt*outsize  ! Used here again
     do i=1,nums
@@ -90,19 +90,28 @@ contains
        enddo
        !if (out) call output_fields(fld)
        meant(1,i) = mean_field(fld,1)
-       if (meant(1,i) - thresh(1) <= 0._dl .and. meant(1,i+1) - thresh(1) >= 0._dl)then
+       timet(1,i) = time
+    enddo
+
+    thresh(1)= 0.5_dl*(maxval(meant)+minval(meant))
+    print*,"max ",maxval(meant),"min ",minval(meant), thresh(1)
+    do m=1,nums-1
+       if (meant(1,m) - thresh(1) <= 0._dl .and. meant(1,m+1) - thresh(1) >= 0._dl)then
           pct = pct + 1 
-          print*,"period is",pct,"mean before filter is",i,meant(1, i)
+          print*,"period is",pct,"mean before filter is",i,meant(1, m)
        endif
 
        if (pct > thresh(2)) then
-          meant(1,i) = 0._dl
+          meant(1,m) = 0._dl
+          meant(1,nums) = 0._dl
        endif
-
-       write(b_file,*) time, meant(1,i)
-       print*,"period is",pct,"mean after filter is",i,meant(1, i)
+       print*,"period is",pct,"mean after filter is",m,meant(1, m)
+       !write(b_file,*) timet(1, m), meant(1, m) I would lose the last row
     enddo
-    write(b_file,*) 
+    do i=1,nums
+       write(b_file,*) timet(1, i), meant(1, i)
+    enddo
+    write(b_file,*)
     print*,"threshold for cross point and period cutoff is ",thresh(1), thresh(2)
   end subroutine time_evolve
 
