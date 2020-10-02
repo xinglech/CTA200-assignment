@@ -58,6 +58,7 @@ contains
     select case (fInd)
     case (1)
        m2 = 2._dl*(1._dl-lambda)
+       ! m2 = -1._dl I cannot have negative mass?
     case(2)
        m2 = 0._dl
     case default

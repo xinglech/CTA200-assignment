@@ -46,10 +46,11 @@ program Scalar_1D
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
 
-  nSamp = 10
+  nSamp = 5
   do i=1,nSamp
-     call initialise_fields(fld,nLat/4+1,0.5*twopi)
-     call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross,out_=.false.)
+     call initialise_fields(fld,nLat/4+1,1.00*twopi)
+     call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross,out_=.true.)
+     print*,"now the simulation loops ",i
   enddo
  
 !  call forward_backward_evolution(0.4_dl/omega,10000,100)
@@ -68,27 +69,42 @@ contains
   subroutine time_evolve(dt,ns,no,out_)
     real(dl), intent(in) :: dt
     integer, intent(in) :: ns, no
-    integer :: i,j, outsize, nums
+    integer :: i,j, outsize, nums, pct
     logical, intent(in), optional :: out_
     integer, save :: b_file
     logical :: out, o
+    real(dl) :: thresh(1:2)
+    real(dl), dimension(1,no+1) :: meant
 
-    out = .true.; if (present(out_)) out = out_
+    out = .false.; if (present(out_)) out = out_
     inquire(opened=o,file='bubble-count.dat')
     if (.not.o) open(unit=newunit(b_file),file='bubble-count.dat')
     if (dt > dx) print*,"Warning, violating Courant condition"
     
-    outsize = ns/no; nums = ns/outsize
-    print*,"dt out is ",dt*outsize
+    outsize = ns/no; nums = ns/outsize; pct = 0; thresh(1)= -0.98_dl; thresh(2) = 2
+    print*,"dt out is ",dt*outsize, "i max is ",nums, "j max is ",outsize, "ns is ",ns, "no is ",no
     dt_ = dt; dtout_ = dt*outsize  ! Used here again
     do i=1,nums
        do j=1,outsize
           call gl10(yvec,dt)
        enddo
-       if (out) call output_fields(fld)
-       write(b_file,*) time, mean_field(fld,1)
+       !if (out) call output_fields(fld)
+       meant(1,i) = mean_field(fld,1)
+       if (meant(1,i) - thresh(1) <= 0._dl .and. meant(1,i+1) - thresh(1) >= 0._dl)then
+          pct = pct + 1
+          !meant(1,i) = mean_field(fld,1)
+          print*, "insert pct is",pct, "meant(j) is",i,meant(1, i)
+       endif
+       if (pct > thresh(2)) then
+          meant(1,i) = 0._dl
+       endif
+          !write(b_file,*) time, meant(1,i)
+       !endif
+       write(b_file,*) time, meant(1,i)
+       print*, "insert pct is",pct, "meant(i) is",i,meant(1, i)
     enddo
-    write(b_file,*)
+    write(b_file,*) 
+    print*,"thresh is ",thresh(1), thresh(2)
   end subroutine time_evolve
 
   function mean_field(fld,i) result(ave)
