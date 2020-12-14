@@ -34,7 +34,7 @@ program Scalar_1D
   type(ScalarLattice) :: simulation
 
 ! What needs fixing, set phi0 out here, allow m^2 to vary from vacuum value, etc.
-  call set_lattice_params(1024,50._dl,2)
+  call set_lattice_params(2048,50._dl,2)
 ! (1024,50._dl,2) = (n, l, nf) = (nLat, len, nFld) 
   call set_model_params(0.5_dl,100._dl)  ! A default for the double well
   ! call set_model_params(1.2_dl,1._dl) = (lam, m2)
@@ -46,9 +46,9 @@ program Scalar_1D
   call initialize_rand(87,18)  ! Seed for random field generation.  Adjust to make a new field realisation
   call setup(nVar)
 
-  nSamp = 5
+  nSamp = 500
   do i=1,nSamp
-     call initialise_fields(fld,nLat/4+1,0.525*twopi)
+     call initialise_fields(fld,512,0.535*twopi)
      call time_evolve(dx/alph,int(alph)*nlat*n_cross,64*n_cross,out_=.true.)
      print*,"now the simulation loops ",i
   enddo
@@ -74,7 +74,7 @@ contains
     integer, save :: b_file
     logical :: out, o
     real(dl) :: thresh(1:2)
-    real(dl), dimension(1,no) :: meant, timet, meantdot
+    real(dl), dimension(1,no) :: meant, timet, meantdot, meantvdot
 
     out = .false.; if (present(out_)) out = out_
     inquire(opened=o,file='bubble-count.dat')
@@ -82,7 +82,7 @@ contains
     if (dt > dx) print*,"Warning, violating Courant condition"
     
     outsize = ns/no; nums = ns/outsize; pct = 0; thresh(2) = 14
-    print*,"dt out is ",dt*outsize, "i max is ",nums, "j max is ",outsize, "ns is ",ns, "no is ",no
+    print*,"dt out is ",dt*outsize, "i max is ",nums, "j max is ",outsize, "ns is ",ns, "no is ",no, "#n = ",nLat, "dx = ", dx, "#dt = ", dt_, "dt_out = ", dtout_, "kmax =?"
     dt_ = dt; dtout_ = dt*outsize  ! Used here again
     do i=1,nums
        do j=1,outsize
@@ -92,6 +92,7 @@ contains
        meant(1,i) = mean_field(fld,1)
        timet(1,i) = time
        meantdot(1,i) = mean_field(fld,2)
+       meantvdot(1,i) = mean_vfield(fld,1)
     enddo
 
     !thresh(1)= 0.5_dl*(maxval(meant)+minval(meant))
@@ -113,7 +114,7 @@ contains
        !write(b_file,*) timet(1, m), meant(1, m) I would lose the last row
     enddo
     do i=1,nums
-       write(b_file,*) timet(1, i), meant(1, i), meantdot(1, i)
+       write(b_file,*) timet(1, i), meant(1, i), meantdot(1, i), meantvdot(1, i)
     enddo
     write(b_file,*)
     print*,"threshold for cross point and period cutoff is ",thresh(1), thresh(2)
@@ -125,6 +126,13 @@ contains
     real(dl) :: ave
     ave = sum(fld(:,i))/dble(size(fld(:,i)))
   end function mean_field
+
+  function mean_vfield(fld,i) result(vave)
+    real(dl), dimension(:,:), intent(in) :: fld
+    integer, intent(in) :: i
+    real(dl) :: vave
+    vave = sum(vp(fld(:,i)))/dble(size(fld(:,i)))
+  end function mean_vfield
   
   subroutine initialise_fields(fld,kmax,phi,klat)
     real(dl), dimension(:,:), intent(inout) :: fld
@@ -135,15 +143,28 @@ contains
     integer :: i; real(dl) :: dt, theta
     integer :: kc, nn
     real(dl) :: phiL
+
+    integer, save :: c_file
+    logical :: o
+    
     
     nn = size(fld(:,1))/2+1
     kc = nn; if (present(klat)) kc = klat
     phiL = 0.5_dl*twopi; if (present(phi)) phiL = phi
 
+
     call initialise_mean_fields(fld)
     yvec(size(fld)+1) = 0._dl ! Add a tcur pointer here
-    call initialize_vacuum_fluctuations(fld(:,1:2),len,get_m2eff(1),kmax,phiL,kc)
-    call initialize_vacuum_fluctuations(fld(:,3:4),len,get_m2eff(2),kmax,phiL,kc)
+    call initialize_vacuum_fluctuations(fld(:,1:2),len,get_m2eff(1),512,phiL,kc)
+    call initialize_vacuum_fluctuations(fld(:,3:4),len,get_m2eff(2),512,phiL,kc)
+    inquire(opened=o, file='inicond.dat')
+    if(.not.o) open(unit=newunit(c_file), file='inicond.dat')
+    write(c_file,*) "# dx = ",dx, "dt = ",dt
+    write(c_file,*) "# x Phi(x) Phidot(x) Chi(x) Chidot(x)"
+    do i = 1,size(fld(:,1))
+       write(c_file,*) dx*(i-1), fld(i,:)
+    enddo
+    write(c_file,*)
   end subroutine initialise_fields
 
   function light_cross_time(len) result(tmax)

@@ -72,10 +72,10 @@ contains
 !      + 0.25_dl*(chi**2-1._dl)**2 + lambda*((1._dl/3._dl)*chi**3-chi+2._dl/3._dl)
   end function v
 
-!  real(dl) elemental function vp(phi)
-!    real(dl), intent(in) :: phi
-!    vp =  (phi+lambda)*(phi**2-1._dl)
-!  end function vp
+  real(dl) elemental function vp(phi)
+    real(dl), intent(in) :: phi
+    vp =  (phi+lambda)*(phi**2-1._dl)
+  end function vp
 
 !  real(dl) elemental function vpp(phi)
 !    real(dl), intent(in) :: phi
@@ -84,7 +84,7 @@ contains
   
   function phi_fv()
     real(dl), dimension(1:nFld) :: phi_fv
-    phi_fv = (/ -1._dl, 0._dl /)
+    phi_fv = (/ -0.88784039_dl, 0._dl /)
   end function phi_fv
 
 ! Lechun: introduce chi and v2(chi), vp2(chi), vpp2(chi)
